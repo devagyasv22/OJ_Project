@@ -1,0 +1,20 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head><title>Problem Set</title>
+  <link rel="stylesheet" href="{% static 'problems/style_problem_list.css' %}">
+  <script src="{% static 'problems/script.js' %}" defer></script>
+  </head>
+<body>
+  <h1>Available Problems</h1>
+  <ul>
+    {% for problem in problems %}
+      <li>
+        <a href="{% url 'problem_detail' problem.id %}">
+          {{ problem.title }} ({{ problem.difficulty }})
+        </a>
+      </li>
+    {% endfor %}
+  </ul>
+</body>
+</html>

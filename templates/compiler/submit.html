@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Submit Code</title>
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.10/codemirror.min.css">
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.10/theme/dracula.min.css">
+    <style>
+        body {
+            background-color: #1e1e1e;
+            color: #ffffff;
+            font-family: 'Segoe UI', sans-serif;
+            padding: 40px;
+        }
+        .form-container {
+            background-color: #2d2d2d;
+            padding: 20px;
+            border-radius: 10px;
+            max-width: 700px;
+            margin: auto;
+        }
+        label {
+            display: block;
+            margin-top: 10px;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        select, button {
+            padding: 8px;
+            width: 100%;
+            border-radius: 5px;
+            border: none;
+        }
+        button {
+            background-color: #3f51b5;
+            color: white;
+            margin-top: 20px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #5c6bc0;
+        }
+        .CodeMirror {
+            height: 500px;
+            font-size: 15px;
+            background-color: #1e1e1e;
+        }
+        textarea {
+  width: 100%;
+  min-height: 100px;
+  resize: vertical;
+  box-sizing: border-box;
+  margin-top: 10px;
+  padding: 10px;
+  font-size: 16px;
+  background-color: #1e1e2f;
+  color: white;
+  border: 1px solid #444;
+  border-radius: 5px;
+}
+
+
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <h2>Submit Your Code</h2>
+        <form method="POST">
+            {% csrf_token %}
+            <label for="id_language">Language:</label>
+            {{ form.language }}
+            
+            <label for="code">Code:</label>
+            <textarea id="code" name="code">{{ form.code.value|default:"" }}</textarea>
+
+            <label for="input">Input</label>
+            <textarea id="input" name="input" rows="5" placeholder="Enter input here"></textarea>
+
+            <button type="submit">Submit</button>
+        </form>
+    </div>
+
+
+
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.10/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.10/mode/python/python.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.10/mode/clike/clike.min.js"></script>
+    <script>
+        const editor = CodeMirror.fromTextArea(document.getElementById("code"), {
+            lineNumbers: true,
+            mode: "python", 
+            theme: "dracula",
+            matchBrackets: true,
+            autoCloseBrackets: true,
+        });
+    </script>
+
+</body>
+</html>
+
