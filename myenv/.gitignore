@@ -28,3 +28,5 @@ __pycache__/
 # Ignore static and media generated folders (optional)
 staticfiles/
 media/
+# gemini Api key
+API_KEY=AIzaSyDC5cf4YCC0-nST3vlNHiY0cU7Of73Yq50

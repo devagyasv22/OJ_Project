@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'problems',
     'bootstrap5',
     'compiler',
+    'widget_tweaks'
 ]
 
 MIDDLEWARE = [
@@ -129,4 +130,4 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 LOGIN_REDIRECT_URL = "/accounts/dashboard/"
 LOGOUT_REDIRECT_URL = "home"
-STATICFILES_DIRS = [ BASE_DIR / "static" ]  # optional for global static files
+# STATICFILES_DIRS = [ BASE_DIR / "static" ]  # optional for global static files

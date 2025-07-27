@@ -1,12 +1,34 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Code Output</title>
-</head>
-<body>
-  <h1>Output:</h1>
-  <pre>{{ submission.output_data }}</pre>
+{% extends 'base.html' %}
 
-  <a href="{% url 'submit_code' %}">Submit another code</a>
-</body>
-</html>
+{% block content %}
+  <h1>Test Case Results</h1>
+
+  <p><strong>Language:</strong> {{ submission.language }}</p>
+  <p><strong>Passed:</strong> {{ submission.passed }}</p>
+
+  <table border="1" cellpadding="10">
+    <tr>
+      <th>Testcase</th>
+      <th>Expected Output</th>
+      <th>Actual Output</th>
+      <th>Status</th>
+    </tr>
+    {% for result in results %}
+    <tr>
+      <td>Test {{ result.testcase }}</td>
+      <td><pre>{{ result.expected }}</pre></td>
+      <td><pre>{{ result.actual }}</pre></td>
+      <td>
+        {% if result.passed %}
+          ✅ Passed
+        {% else %}
+          ❌ Failed
+        {% endif %}
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+
+  <br>
+  <a href="{% url 'problem_detail' submission.problem.id %}">← Back to Problem</a>
+  {% endblock %}
