@@ -40,7 +40,7 @@ INSTALLED_APPS = [
     'members',
     'accounts',
     'problems',
-    'bootstrap5',
+    "django_bootstrap5",
     'compiler',
     'widget_tweaks'
 ]

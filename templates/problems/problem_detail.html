@@ -5,8 +5,98 @@
 <html>
 <head>
   <meta charset="utf-8">
+  <meta name="csrf-token" content="{{ csrf_token }}">
   <title>{{ problem.title }}</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  
+  <script>
+    console.log("Script in head loaded");
+    
+    function initAIReview() {
+      console.log("initAIReview called");
+      const reviewBtn = document.getElementById("ai-review-btn");
+      
+      if (!reviewBtn) {
+        console.error("AI Review button not found!");
+        return;
+      }
+      
+      console.log("AI Review button found:", reviewBtn);
+      
+      // Always enable the button - removed test case passing requirement
+      reviewBtn.disabled = false;
+      reviewBtn.classList.add("btn-primary");
+      reviewBtn.title = "Get AI feedback on your solution";
+      console.log("Button always enabled for AI review");
+      
+      reviewBtn.addEventListener("click", function (event) {
+        event.preventDefault();
+        console.log("Button clicked!");
+        
+        // Get the code
+        const code = document.getElementById("code").value;
+        console.log("Code length:", code.length);
+        
+        if (!code.trim()) {
+          alert("Please enter some code first!");
+          return;
+        }
+        
+        // Show loading state
+        reviewBtn.disabled = true;
+        const originalText = reviewBtn.textContent;
+        reviewBtn.textContent = "Getting AI Review...";
+        console.log("Starting AI review request...");
+
+        // Get CSRF token
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+        console.log("CSRF token:", csrfToken ? "found" : "not found");
+
+        // Make the API call
+        fetch("/problems/ai-review/", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+            "X-CSRFToken": csrfToken
+          },
+          body: new URLSearchParams({
+            code: code,
+            result: "All test cases passed"
+          })
+        })
+        .then(response => {
+          console.log("Response status:", response.status);
+          return response.json();
+        })
+        .then(data => {
+          console.log("AI Review Response:", data);
+          if (data.feedback) {
+            alert("AI Review:\n" + data.feedback);
+          } else if (data.error) {
+            alert("Error: " + data.error);
+          } else {
+            alert("Unexpected response: " + JSON.stringify(data));
+          }
+        })
+        .catch(error => {
+          console.error("Error in AI review:", error);
+          alert("Error getting AI review: " + error.message);
+        })
+        .finally(() => {
+          // Restore button text (but keep it enabled)
+          reviewBtn.textContent = originalText;
+          console.log("AI review request completed");
+        });
+      });
+      
+      console.log("Event listener added");
+    }
+    
+    document.addEventListener("DOMContentLoaded", function () {
+      console.log("DOM loaded");
+      initAIReview();
+    });
+  </script>
   <style>
     body {
       background-color: #121212;
@@ -127,8 +217,12 @@
 
           <button type="submit" name="action" value="custom" class="btn btn-outline-light me-2">Run Custom Input</button>
           <button type="submit" name="action" value="run_all" class="btn btn-success">Run All Test Cases</button>
-          <button id="ai-review-btn">AI Review</button>
+          <button type="button" id="ai-review-btn" class="btn btn-primary" 
+                  title="Get AI feedback on your solution">
+            AI Review
+          </button>
           <pre id="result-area"></pre>
+          
         </form>
       </div>
     </div>
@@ -192,56 +286,6 @@
   <!-- {% if submission %} -->
   <!-- Just for testing -->
 
-  <meta name="csrf-token" content="{{ csrf_token }}">
-  {% if submission %}
-  <script>
-    document.addEventListener("DOMContentLoaded", function () {
-      const reviewBtn = document.getElementById("ai-review-btn");
-      // const reviewBtn = document.getElementById("ai-review-btn");
-      const passed = "{{ submission.passed|yesno:'true,false' }}"; 
-      const passedBool = passed === "true"; 
-      reviewBtn.disabled = !passedBool;
-  
-      console.log("Passed value from Django:", passed);  
-  
-      reviewBtn.addEventListener("click", function () {
-        console.log("Review button clicked!");  
-        const code = document.getElementById("code").value;
-  
-        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-  
-        fetch("/ai-review/", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/x-www-form-urlencoded",
-            "X-CSRFToken": csrfToken
-          },
-          body: new URLSearchParams({
-            code: code,
-            result: "All test cases passed"
-          })
-        })
-        // .then(response => response.json())
-        // .then(data => {
-        //   alert("AI Review:\n" + data.feedback);
-        // })
-        .then(response => {
-        console.log("Raw response:", response);
-        return response.json();
-        })
-        .then(data => {
-        console.log("AI Review Response:", data);
-        alert("AI Review:\n" + data.feedback);
-        })
-        .catch(error => {
-          console.error("Error in AI review:", error);
-        });
-      });
-    });
-  </script>
-  {% endif %}
-  
-
   <!-- {% endif %} -->
 
 </body>
@@ -258,7 +302,7 @@
       reviewBtn.addEventListener("click", function () {
         const code = document.getElementById("code").value;
   
-        fetch("/ai-review/", {
+        fetch("/problems/ai-review/", {
           method: "POST",
           headers: {
             "Content-Type": "application/x-www-form-urlencoded",

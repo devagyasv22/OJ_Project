@@ -23,18 +23,38 @@ genai.configure(api_key="AIzaSyDC5cf4YCC0-nST3vlNHiY0cU7Of73Yq50")
 
 @csrf_exempt
 def ai_review(request):
+    print(f"AI Review called with method: {request.method}")
+    
     if request.method == "POST":
-
         code = request.POST.get("code")
         result = request.POST.get("result")
+        
+        print(f"Code length: {len(code) if code else 0}")
+        print(f"Result: {result}")
 
-        prompt = f"Review this solution:\n{code}\n\nTest Case Result: {result}\nProvide helpful improvement suggestions."
+        if not code:
+            return JsonResponse({"error": "No code provided"}, status=400)
 
-        model = genai.GenerativeModel("gemini-2.5-flash")
-        response = model.generate_content(prompt)
+        try:
+            prompt = f"Review this solution:\n{code}\n\nTest Case Result: {result}\nProvide helpful improvement suggestions."
 
-        return JsonResponse({"feedback": response.text})
-    return JsonResponse({"error":"Invalid request"},status=405)
+            model = genai.GenerativeModel("gemini-2.5-flash")
+            response = model.generate_content(prompt)
+            
+            print(f"AI response received: {len(response.text) if response.text else 0} characters")
+
+            return JsonResponse({"feedback": response.text})
+        
+        except Exception as e:
+            print(f"Error in AI review: {str(e)}")
+            return JsonResponse({"error": f"AI review failed: {str(e)}"}, status=500)
+    elif request.method == "GET":
+        return JsonResponse({
+            "error": "This endpoint is for AI code review via POST requests only",
+            "message": "Please use the AI Review button on a problem page"
+        }, status=405)
+    else:
+        return JsonResponse({"error": "Invalid request method"}, status=405)
 
 def problem_list(request):
     problems = Problem.objects.all()
@@ -83,33 +103,21 @@ def submit_code(request, problem_id):
 
         # 2) Run all testcases
         elif action == 'run_all':
-            results=run_test_cases(submission.language,submission.code,problem_id)
-            # results   = []
-            # print("starting something")
-            # all_passed = True
-            all_passed=results[-1].get("passed")
-            # print(testcases)
-            # for idx, tc in enumerate(testcases, start=1):
-            #     print("starting for loop")
-            #     actual   = run_code(submission.language,
-            #                         submission.code,
-            #                         tc.input_data).strip()
-            #     expected = tc.expected_output.strip()
-            #     passed   = (actual == expected)
-            #     results.append({
-            #         'testcase': idx,
-            #         'expected': expected,
-            #         'actual':   actual,
-            #         'passed':   passed,
-            #     })
-            #     print(f"running test cases,{idx}")
-            #     if not passed:
-            #         all_passed = False
-            print("results:", results)
-            print("all_passed extracted:", all_passed)
+            results = run_test_cases(submission.language, submission.code, problem_id)
+            
+            # Calculate overall pass status
+            if not results:
+                # No test cases found
+                all_passed = False
+                print("No test cases found for this problem")
+            else:
+                # Check if all test cases passed
+                all_passed = all(tc.get("passed", False) for tc in results)
+                print("results:", results)
+                print("all_passed calculated:", all_passed)
+            
             submission.output_data = str(results)
-            submission.passed      = all_passed
-            # print("SUBMISSION PASSED:", submission.passed)
+            submission.passed = all_passed
             submission.save()
 
     # Render same template with everything—no separate result.html
