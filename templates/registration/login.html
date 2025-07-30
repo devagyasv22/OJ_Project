@@ -1,14 +1,63 @@
-<!-- templates/registration/login.html -->
 {% extends "base.html" %}
 
-{% block title %}Login{% endblock %}
+{% block title %}Log In — Devagya OJ{% endblock %}
 
 {% block content %}
-<h2>Log In</h2>
-<form method="post">
-  {% csrf_token %}
-  {{ form }}
-  <button type="submit">Log In</button>
-</form>
+<style>
+  /* make placeholders brighter in dark mode */
+.form-control::placeholder {
+  /* solid white at 60% opacity */
+  color: rgba(255, 255, 255, 0.6) !important;
+  opacity: 1 !important;  /* ensure the color above isn’t dimmed further */
+}
+
+/* boost the input background a little so the border still pops */
+.form-control {
+  background-color: #2e2e2e !important;
+}
+
+/* and lighten the label text */
+.form-label {
+  color: #ddd !important;
+}
+
+</style>
+<div class="row justify-content-center">
+  <div class="col-md-4">
+    <div class="card shadow-sm">
+      <div class="card-header text-white bg-secondary">Log In</div>
+      <div class="card-body">
+        <form method="post">
+          {% csrf_token %}
+
+          <div class="mb-3">
+            <label for="id_username" class="form-label">Username</label>
+            <input
+              type="text"
+              id="id_username"
+              name="username"
+              class="form-control"
+              placeholder="Enter your username"
+              required
+            >
+          </div>
+
+          <div class="mb-3">
+            <label for="id_password" class="form-label">Password</label>
+            <input
+              type="password"
+              id="id_password"
+              name="password"
+              class="form-control"
+              placeholder="Enter your password"
+              required
+            >
+          </div>
+
+          <button type="submit" class="btn btn-primary w-100">Log In</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}
-Show light mode

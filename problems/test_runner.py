@@ -40,7 +40,7 @@ def run_test_cases(language, code, problem_id):
                 'error': compile_result.stderr.decode()
             }]
 
-    else:  # Python
+    else: 
         ext = 'py'
         source_path = BASE / f"temp_{uid}.py"
         source_path.write_text(code)
