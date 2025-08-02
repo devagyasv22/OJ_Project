@@ -10,6 +10,12 @@ class SignUpView(CreateView):
     success_url = reverse_lazy("login")
     template_name = "registration/signup.html"
 
+def get_form(self, form_class=None):
+    form = super().get_form(form_class)
+    for field in form.fields.values():
+        field.widget.attrs['class'] = 'form-control bg-dark text-white border-secondary'
+    return form
+
 
 @login_required
 def dashboard_view(request):

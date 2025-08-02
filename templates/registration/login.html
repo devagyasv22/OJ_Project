@@ -3,25 +3,7 @@
 {% block title %}Log In — Devagya OJ{% endblock %}
 
 {% block content %}
-<style>
-  /* make placeholders brighter in dark mode */
-.form-control::placeholder {
-  /* solid white at 60% opacity */
-  color: rgba(255, 255, 255, 0.6) !important;
-  opacity: 1 !important;  /* ensure the color above isn’t dimmed further */
-}
 
-/* boost the input background a little so the border still pops */
-.form-control {
-  background-color: #2e2e2e !important;
-}
-
-/* and lighten the label text */
-.form-label {
-  color: #ddd !important;
-}
-
-</style>
 <div class="row justify-content-center">
   <div class="col-md-4">
     <div class="card shadow-sm">
@@ -36,7 +18,7 @@
               type="text"
               id="id_username"
               name="username"
-              class="form-control"
+              class="form-control bg-dark text-white border-secondary"
               placeholder="Enter your username"
               required
             >
@@ -48,7 +30,7 @@
               type="password"
               id="id_password"
               name="password"
-              class="form-control"
+              class="form-control bg-dark text-white border-secondary"
               placeholder="Enter your password"
               required
             >
