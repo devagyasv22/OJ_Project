@@ -36,37 +36,49 @@ def run_code(language, code, input_data):
 
     input_path.write_text(input_data or "")
 
-    if language == 'cpp':
-        code_path.write_text(code)
-        exe_path = BASE / f"prog_{uid}"
-        compile_proc = subprocess.run(['g++', str(code_path), '-o', str(exe_path)])
-        if compile_proc.returncode != 0:
-            return "Compilation Error"
-        with open(input_path, 'r') as f_in, open(output_path, 'w') as f_out:
-            subprocess.run([str(exe_path)], stdin=f_in, stdout=f_out)
-
-    elif language == 'py':
-        code_path.write_text(code)
-        with open(input_path, 'r') as f_in, open(output_path, 'w') as f_out:
-            subprocess.run(['python3', str(code_path)], stdin=f_in, stdout=f_out)
-
-    elif language == 'java':
-        java_file = BASE / f"Main_{uid}.java"
-        java_file.write_text(code)
-
-        compile_proc = subprocess.run(
-            ['javac', str(java_file)],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True
-        )
-        if compile_proc.returncode != 0:
-            return f"Compilation Error:\n{compile_proc.stderr}"
-
-        with open(input_path, 'r') as f_in, open(output_path, 'w') as f_out:
-            subprocess.run(
-                ['java', '-cp', str(BASE), f"Main_{uid}"],
-                stdin=f_in, stdout=f_out
+    try:
+        if language == 'cpp':
+            code_path.write_text(code)
+            exe_path = BASE / f"prog_{uid}"
+            compile_proc = subprocess.run(
+                ['g++', str(code_path), '-o', str(exe_path)],
+                timeout=3
             )
+            if compile_proc.returncode != 0:
+                return "Compilation Error"
 
-    return output_path.read_text()
+            with open(input_path, 'r') as f_in, open(output_path, 'w') as f_out:
+                subprocess.run([str(exe_path)], stdin=f_in, stdout=f_out, timeout=3)
+
+        elif language == 'py':
+            code_path.write_text(code)
+            with open(input_path, 'r') as f_in, open(output_path, 'w') as f_out:
+                subprocess.run(
+                    ['python3', str(code_path)],
+                    stdin=f_in, stdout=f_out, timeout=3
+                )
+
+        elif language == 'java':
+            java_file = BASE / f"Main_{uid}.java"
+            java_file.write_text(code)
+
+            compile_proc = subprocess.run(
+                ['javac', str(java_file)],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+                timeout=3
+            )
+            if compile_proc.returncode != 0:
+                return f"Compilation Error:\n{compile_proc.stderr}"
+
+            with open(input_path, 'r') as f_in, open(output_path, 'w') as f_out:
+                subprocess.run(
+                    ['java', '-cp', str(BASE), f"Main_{uid}"],
+                    stdin=f_in, stdout=f_out, timeout=3
+                )
+
+        return output_path.read_text()
+
+    except subprocess.TimeoutExpired:
+        return "Time Limit Exceeded"

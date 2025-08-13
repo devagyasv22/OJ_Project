@@ -29,4 +29,4 @@ __pycache__/
 staticfiles/
 media/
 # gemini Api key
-API_KEY=AIzaSyDC5cf4YCC0-nST3vlNHiY0cU7Of73Yq50
+GEMINI_API_KEY=AIzaSyDC5cf4YCC0-nST3vlNHiY0cU7Of73Yq50

@@ -1,0 +1,14 @@
+<h1>{{ contest.name }}</h1>
+<p>Start: {{ contest.start_time }} | End: {{ contest.end_time }}</p>
+
+<ul>
+{% for cp in contest_problems %}
+    <li>
+        <a href="{% url 'contest_problem_detail' contest.id cp.problem.id %}">
+            {{ cp.problem.title }}
+        </a>
+    </li>
+{% empty %}
+    <li>No problems in this contest yet.</li>
+{% endfor %}
+</ul>

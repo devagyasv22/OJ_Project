@@ -25,5 +25,7 @@ urlpatterns = [
     path("", TemplateView.as_view(template_name="home.html"), name="home"),
     path("problems/", include("problems.urls")),
     path("compiler/",include("compiler.urls")),
+    path('contests/', include('contests.urls')),
+
    
 ]

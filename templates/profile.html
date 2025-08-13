@@ -1,12 +1,65 @@
-<!-- templates/profile.html -->
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ user.username }}'s Profile</title>
+    <style>
+        body {
+            background-color: #121212;
+            color: #e0e0e0;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            color: #ffffff;
+            border-bottom: 2px solid #333;
+            padding-bottom: 10px;
+        }
+        a {
+            color: #64b5f6;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        .profile-card {
+            background-color: #1e1e1e;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.4);
+            max-width: 500px;
+        }
+    </style>
+</head>
+<body>
 
-{% block title %}Your Profile{% endblock %}
+<div class="profile-card">
+    <h1>{{ user.username }}'s Profile</h1>
 
-{% block content %}
-  <h2>Profile</h2>
+    {% if profile.codeforces_handle %}
+        {% if is_full_url %}
+            <p>
+                Codeforces Handle:
+                <a href="{{ profile.codeforces_handle }}" target="_blank">
+                    {{ profile.codeforces_handle|cut:"https://codeforces.com/profile/" }}
+                </a>
+            </p>
+        {% else %}
+            <p>
+                Codeforces Handle:
+                <a href="https://codeforces.com/profile/{{ profile.codeforces_handle }}" target="_blank">
+                    {{ profile.codeforces_handle }}
+                </a>
+            </p>
+        {% endif %}
+    {% else %}
+        <p>No Codeforces handle linked.
+            <a href="{% url 'edit_profile' %}">Link now</a>
+        </p>
+    {% endif %}
+</div>
 
-  <p><strong>Username:</strong> {{ user.username }}</p>
-  <!-- <p><strong>Email:</strong> {{ user.email }}</p> -->
-  <!-- You can add more user info here -->
-{% endblock %}
+</body>
+</html>

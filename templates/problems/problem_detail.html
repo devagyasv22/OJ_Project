@@ -9,316 +9,210 @@
   <title>{{ problem.title }}</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   
+  <!-- AI Review JS -->
   <script>
-    console.log("Script in head loaded");
-    
-    function initAIReview() {
-      console.log("initAIReview called");
-      const reviewBtn = document.getElementById("ai-review-btn");
-      
-      if (!reviewBtn) {
-        console.error("AI Review button not found!");
-        return;
-      }
-      
-      console.log("AI Review button found:", reviewBtn);
-      
-      // Always enable the button - removed test case passing requirement
-      reviewBtn.disabled = false;
-      reviewBtn.classList.add("btn-primary");
-      reviewBtn.title = "Get AI feedback on your solution";
-      console.log("Button always enabled for AI review");
-      
-      reviewBtn.addEventListener("click", function (event) {
-        event.preventDefault();
-        console.log("Button clicked!");
-        
-        // Get the code
-        const code = document.getElementById("code").value;
-        console.log("Code length:", code.length);
-        
-        if (!code.trim()) {
-          alert("Please enter some code first!");
-          return;
-        }
-        
-        // Show loading state
-        reviewBtn.disabled = true;
-        const originalText = reviewBtn.textContent;
-        reviewBtn.textContent = "Getting AI Review...";
-        console.log("Starting AI review request...");
-
-        // Get CSRF token
-        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-        console.log("CSRF token:", csrfToken ? "found" : "not found");
-
-        // Make the API call
-        fetch("/problems/ai-review/", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/x-www-form-urlencoded",
-            "X-CSRFToken": csrfToken
-          },
-          body: new URLSearchParams({
-            code: code,
-            result: "All test cases passed"
-          })
-        })
-        .then(response => {
-          console.log("Response status:", response.status);
-          return response.json();
-        })
-        .then(data => {
-          console.log("AI Review Response:", data);
-          if (data.feedback) {
-            alert("AI Review:\n" + data.feedback);
-          } else if (data.error) {
-            alert("Error: " + data.error);
-          } else {
-            alert("Unexpected response: " + JSON.stringify(data));
-          }
-        })
-        .catch(error => {
-          console.error("Error in AI review:", error);
-          alert("Error getting AI review: " + error.message);
-        })
-        .finally(() => {
-          // Restore button text (but keep it enabled)
-          reviewBtn.textContent = originalText;
-          console.log("AI review request completed");
-        });
-      });
-      
-      console.log("Event listener added");
-    }
-    
     document.addEventListener("DOMContentLoaded", function () {
-      console.log("DOM loaded");
-      initAIReview();
-    });
-  </script>
-  <style>
-    body {
-      background-color: #121212;
-      color: #e0e0e0;
-    }
-  
-    .card {
-      background-color: #1e1e1e;
-      color: #e0e0e0;
-      border-color: #333;
-    }
-  
-    .form-control, .form-select {
-      background-color: #2b2b2b;
-      color: #ffffff;
-      border: 1px solid #444;
-    }
-  
-    .form-control::placeholder {
-      color: #bbbbbb;
-    }
-  
-    textarea.form-control {
-      resize: vertical;
-    }
-  
-    .table th,
-    .table td,
-    .table {
-      background-color: #1e1e1e;
-      color: #f0f0f0;
-    }
-  
-    .table-striped tbody tr:nth-of-type(odd) {
-      background-color: #2c2c2c;
-    }
-  
-    .table-bordered th,
-    .table-bordered td {
-      border-color: #555;
-    }
-  
-    pre {
-      background-color: #2c2c2c;
-      color: #f0f0f0;
-    }
-  
-    .badge {
-      font-size: 0.9em;
-      padding: 0.5em;
-    }
-  
-    .card-header {
-      border-bottom: 1px solid #444;
-    }
-  </style>
-  
-</head>
-<body class="bg-dark text-white">
-
-  <div class="container my-5">
-    <!-- Problem Title -->
-    <h1 class="mb-4 text-center">{{ problem.title }}</h1>
+        const aiReviewBtn = document.getElementById("ai-review-btn");
+        const aiReviewContainer = document.getElementById("ai-review-container");
+        const aiReviewOutput = document.getElementById("ai-review-output");
     
-    <!-- Problem Statement -->
-    <div class="card mb-4">
-      <div class="card-header bg-dark text-white">
-        Problem Statement
+        aiReviewBtn.addEventListener("click", function () {
+            const code = document.getElementById("code").value;
+            const result = document.getElementById("result")?.value || "";
+    
+            fetch("{% url 'ai_review_code' problem.id %}", {
+                method: "POST",
+                // No need for CSRF header since view is csrf_exempt
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded"
+                },
+                body: new URLSearchParams({
+                    code: code,
+                    result: result
+                })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.feedback) {
+                    aiReviewOutput.textContent = data.feedback;
+                } else if (data.error) {
+                    aiReviewOutput.textContent = "Error: " + data.error;
+                } else {
+                    aiReviewOutput.textContent = "Unexpected response: " + JSON.stringify(data);
+                }
+                aiReviewContainer.style.display = "block";
+                aiReviewContainer.scrollIntoView({ behavior: "smooth" });
+            })
+            .catch(error => {
+                aiReviewOutput.textContent = "Request failed: " + error;
+                aiReviewContainer.style.display = "block";
+            });
+        });
+    });
+    </script>
+    
+
+  <style>
+    body { background-color: #121212; color: #e0e0e0; }
+    .card { background-color: #1e1e1e; color: #e0e0e0; border-color: #333; }
+    .form-control, .form-select { background-color: #2b2b2b; color: #fff; border: 1px solid #444; }
+    .form-control::placeholder { color: #bbbbbb; }
+    .table { background-color: #1e1e1e; color: #f0f0f0; }
+    .table-striped tbody tr:nth-of-type(odd) { background-color: #2c2c2c; }
+    pre { background-color: #2c2c2c; color: #f0f0f0; }
+    .full-height { min-height: 100%; display: flex; flex-direction: column; }
+    #ai-review-output { white-space: pre-wrap; }
+  </style>
+</head>
+
+<body class="bg-dark text-white">
+  <div class="container-fluid my-4">
+    <div class="row g-4 align-items-stretch">
+      
+      <!-- LEFT COLUMN -->
+      <div class="col-lg-6 d-flex flex-column">
+        <h1 class="mb-4 text-center">{{ problem.title }}</h1>
+        <div class="card mb-4 flex-grow-1 h-100">
+          <div class="card-header bg-dark text-white">Problem Statement</div>
+          <div class="card-body">
+            <p>{{ problem.statement }}</p>
+          </div>
+        </div>
+
+        <div class="card mb-4">
+          <div class="card-header bg-secondary text-white">Sample Test Cases</div>
+          <ul class="list-group list-group-flush">
+            {% if problem.sample_input or problem.sample_output %}
+              <li class="list-group-item" style="background-color: #1e1e1e; color: #e0e0e0;">
+                {% if problem.sample_input %}
+                  <div><strong>Sample Input:</strong></div>
+                  <pre style="background-color: #1e1e1e; color: #e0e0e0; padding: 0.5rem; border: 1px solid #333; white-space: pre-wrap; margin-top: 0.25rem;">{{ problem.sample_input }}</pre>
+                {% endif %}
+        
+                {% if problem.sample_output %}
+                  <div class="mt-2"><strong>Sample Output:</strong></div>
+                  <pre style="background-color: #1e1e1e; color: #e0e0e0; padding: 0.5rem; border: 1px solid #333; white-space: pre-wrap; margin-top: 0.25rem;">{{ problem.sample_output}}</pre>
+                {% endif %}
+              </li>
+            {% endif %}
+        
+            {% for tc in testcases %}
+              <li class="list-group-item" style="background-color: #1e1e1e; color: #e0e0e0;">
+                <strong>Input:</strong>
+                <pre style="background-color: #1e1e1e; color: #e0e0e0; padding: 0.5rem; border: 1px solid #333; white-space: pre-wrap;">
+        {{ tc.input_data}}
+                </pre>
+                <strong>Expected:</strong>
+                <pre style="background-color: #1e1e1e; color: #e0e0e0; padding: 0.5rem; border: 1px solid #333; white-space: pre-wrap;">
+        {{ tc.expected_output}}
+                </pre>
+              </li>
+            {% empty %}
+            {% endfor %}
+          </ul>
+        </div>
       </div>
-      <div class="card-body">
-        <p>{{ problem.statement }}</p>
+
+      <!-- RIGHT COLUMN -->
+      <div class="col-lg-6 d-flex flex-column">
+        <div class="card mb-4 flex-grow-1">
+          <div class="card-header bg-primary text-white">Submit Your Code</div>
+          <div class="card-body">
+            <form method="post" action="{% url 'submit_code' problem.id %}">
+              {% csrf_token %}
+              
+              <!-- Language Selector -->
+              <div class="mb-3">
+                <label for="id_language" class="form-label">Language:</label>
+                {{ form.language|add_class:"form-select" }}
+              </div>
+
+              <!-- Code Editor -->
+              <div class="mb-3">
+                <label for="code" class="form-label">Code:</label>
+                <textarea id="code" name="code" rows="15" class="form-control">{{ form.code.value|default:"" }}</textarea>
+              </div>
+
+              <!-- Custom Input -->
+              <div class="mb-3">
+                <label for="input_data" class="form-label">Custom Input (optional):</label>
+                <textarea id="input_data" name="input_data" rows="5" class="form-control" placeholder="Enter custom input here">{{ form.input_data.value|default:"" }}</textarea>
+              </div>
+
+              <!-- AI Review Output -->
+              <div id="ai-review-container" class="mt-3" style="display:none;">
+                <div class="card bg-dark border-light">
+                  <div class="card-header bg-warning text-dark fw-bold">AI Review</div>
+                  <div class="card-body">
+                    <pre id="ai-review-output" class="bg-dark text-white p-3 mb-0"></pre>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Buttons -->
+              <div class="d-flex flex-wrap gap-2">
+                <button type="submit" name="action" value="custom" class="btn btn-outline-light">Run Custom Input</button>
+                <button type="submit" name="action" value="run_all" class="btn btn-success">Run All Test Cases</button>
+                <button type="button" id="ai-review-btn" class="btn btn-primary">AI Review</button>
+              </div>
+
+              <pre id="result-area" class="mt-3"></pre>
+            </form>
+          </div>
+        </div>
+
+        {% if custom_output is not None %}
+        <div class="card mb-4">
+          <div class="card-header bg-info text-white">Custom Run Output</div>
+          <div class="card-body">
+            <pre class="bg-dark text-white p-3">{{ custom_output }}</pre>
+          </div>
+        </div>
+        {% endif %}
+
+        {% if results %}
+        <div class="card mb-4">
+          <div class="card-header bg-secondary">Test Case Results</div>
+          <div class="card-body">
+            <table class="table table-bordered table-striped">
+              <thead class="table-dark">
+                <tr>
+                  <th>#</th>
+                  <th>Expected</th>
+                  <th>Actual</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for r in results %}
+                <tr>
+                  <td>{{ r.testcase }}</td>
+                  <td><pre>{{ r.expected }}</pre></td>
+                  <td><pre>{{ r.actual }}</pre></td>
+                  <td>
+                    {% if r.passed %}
+                      <span class="badge bg-success">Passed</span>
+                    {% else %}
+                      <span class="badge bg-danger">Failed</span>
+                    {% endif %}
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+            <p class="mt-3"><strong>Overall:</strong>
+              <span class="fw-bold">{{ submission.passed|yesno:" All Passed, Some Failed" }}</span>
+            </p>
+          </div>
+        </div>
+        {% endif %}
       </div>
     </div>
-
-    <!-- Sample Test Cases -->
-    <!-- <div class="card mb-4">
-      <div class="card-header bg-secondary text-white">
-        Sample Test Cases
-      </div>
-      <ul class="list-group list-group-flush">
-        {% for tc in testcases %}
-          <li class="list-group-item">
-            <strong>Input:</strong>
-            <pre class="bg-light p-2">{{ tc.input_data }}</pre>
-            <strong>Expected:</strong>
-            <pre class="bg-light p-2">{{ tc.expected_output }}</pre>
-          </li>
-        {% empty %}
-          <li class="list-group-item">No testcases added yet.</li>
-        {% endfor %}
-      </ul>
-    </div> -->
-
-    <!-- Submission Form -->
-    <div class="card mb-4">
-      <div class="card-header bg-primary text-white">
-        Submit Your Code
-      </div>
-      <div class="card-body">
-        <form method="post" action="{% url 'submit_code' problem.id %}">
-          {% csrf_token %}
-
-          <div class="mb-3">
-            <label for="input_data" class="form-label">Custom Input (optional):</label>
-            <textarea id="input_data" name="input_data" rows="5" class="form-control"
-              placeholder="Enter custom input here">{{ form.input_data.value|default:"" }}</textarea>
-          </div>
-
-          <div class="mb-3">
-            <label for="id_language" class="form-label">Language:</label>
-            {{ form.language|add_class:"form-select" }}
-          </div>
-
-          <div class="mb-3">
-            <label for="code" class="form-label">Code:</label>
-            <textarea id="code" name="code" rows="15" class="form-control">{{ form.code.value|default:"" }}</textarea>
-          </div>
-
-          <button type="submit" name="action" value="custom" class="btn btn-outline-light me-2">Run Custom Input</button>
-          <button type="submit" name="action" value="run_all" class="btn btn-success">Run All Test Cases</button>
-          <button type="button" id="ai-review-btn" class="btn btn-primary" 
-                  title="Get AI feedback on your solution">
-            AI Review
-          </button>
-          <pre id="result-area"></pre>
-          
-        </form>
-      </div>
-    </div>
-
-    <!-- Output for Custom Input -->
-    {% if custom_output is not None %}
-      <div class="card mb-4">
-        <div class="card-header bg-info text-white">
-          Custom Run Output
-        </div>
-        <div class="card-body">
-          <pre class="bg-dark text-white p-3">{{ custom_output }}</pre>
-        </div>
-      </div>
-    {% endif %}
-
-    <!-- Test Case Results -->
-    {% if results %}
-      <div class="card mb-4">
-        <div class="card-header bg-secondary">
-          Test Case Results
-        </div>
-        <div class="card-body">
-          <table class="table table-bordered table-striped">
-            <thead class="table-dark">
-              <tr>
-                <th>#</th>
-                <th>Expected</th>
-                <th>Actual</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for r in results %}
-              <tr>
-                <td>{{ r.testcase }}</td>
-                <td><pre>{{ r.expected }}</pre></td>
-                <td><pre>{{ r.actual }}</pre></td>
-                <td>
-                  {% if r.passed %}
-                    <span class="badge bg-success"> Passed</span>
-                  {% else %}
-                    <span class="badge bg-danger"> Failed</span>
-                  {% endif %}
-                </td>
-              </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-          <p class="mt-3"><strong>Overall:</strong>
-             <span class="fw-bold">{{ submission.passed|yesno:" All Passed, Some Failed" }}</span>
-          </p>
-        </div>
-      </div>
-    {% endif %}
-
-    <!-- Debug Info -->
-    <!-- <pre class="text-muted small">DEBUG: results = {{ results|default:"<no results in context>" }}</pre> -->
-
   </div>
-  <!-- {% if submission %} -->
-  <!-- Just for testing -->
-
-  <!-- {% endif %} -->
-
 </body>
 </html>
-
-<!-- <script>
-  document.addEventListener("DOMContentLoaded", function () {
-    const reviewBtn = document.getElementById("ai-review-btn");
-    if (reviewBtn) {
-      {% if submission and submission.passed %}
-        reviewBtn.disabled = false;
-      {% endif %}
-  
-      reviewBtn.addEventListener("click", function () {
-        const code = document.getElementById("code").value;
-  
-        fetch("/problems/ai-review/", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/x-www-form-urlencoded",
-            "X-CSRFToken": "{{ csrf_token }}"
-          },
-          body: new URLSearchParams({
-            code: code,
-            result: "All test cases passed"
-          })
-        })
-        .then(response => response.json())
-        .then(data => {
-          alert("AI Review:\n" + data.feedback);
-        });
-      });
-    }
-  });
-  </script> -->
-  
